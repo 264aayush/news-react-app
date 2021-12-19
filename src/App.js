@@ -1,25 +1,52 @@
-import logo from './logo.svg';
 import './App.css';
+import react from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+//comp
+import Home from './components/Home';
+import PublisherNews from './components/PublisherNews';
+
+//api
+import { fetchData } from './api/fetchNews';
+
+//util
+import getPublishers from './utilities/getPublishers';
+
+//context
+import myContext from './context/MyContext';
+
+let [useState, useEffect] = [react.useState, react.useEffect];
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+  let [publishers, setPublishers] = useState([]);
+  let [newsData, setNewsData] = useState([])
+
+  useEffect(() => {
+    fetchData().then(res => {
+      setNewsData(res.data);
+      setPublishers(getPublishers(res.data));
+    });
+  }, [])
+
+
+
+  return <div>
+    <myContext.Provider value={
+      {
+        newsData: newsData,
+        publishers: publishers
+      }
+    }>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home></Home>} />
+          <Route path=":publisher" element={<PublisherNews></PublisherNews>} />
+        </Routes>
+      </Router>
+    </myContext.Provider>
+  </div>
 }
 
 export default App;
